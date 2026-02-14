@@ -1,13 +1,15 @@
 // db.js
 import pkg from "pg";
+import dotenv from 'dotenv'
 const { Pool } = pkg;
 
+dotenv.config()
 const pool = new Pool({
-  user: "sammit",
-  host: "192.168.1.11",
-  database: "grocery",
-  password: "sammit123",
-  port: 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT
 });
 
 export default pool;
