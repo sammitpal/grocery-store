@@ -1,0 +1,25 @@
+{
+  "name": "grocery_store",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "node-mumble": "^1.2.1",
+    "pg": "^8.18.0",
+    "zod": "^3.25.69"
+  },
+  "devDependencies": {
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.3.1",
+    "nodemon": "^3.1.11"
+  }
+}
