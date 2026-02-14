@@ -4,6 +4,10 @@ import cart from './src/contollers/cart.js'
 import auth  from './src/contollers/auth.js'
 import order from './src/contollers/order.js'
 import payment from './src/contollers/payments.js';
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const app = express();
 app.use(express.json())
 

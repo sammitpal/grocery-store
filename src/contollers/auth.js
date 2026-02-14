@@ -2,11 +2,9 @@ import { Router } from "express";
 import pool from "../config/db.js";
 import validations from "../utils/validateSchema.js";
 import jwt from 'jsonwebtoken'
-import dotenv from "dotenv";
 
 
 const router = Router();
-dotenv.config();
 router.post('/register',async(req,res,next) => {
 
   const validatedReq = validations.RegisterSchema.safeParse(req.body);
