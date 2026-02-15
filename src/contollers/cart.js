@@ -6,12 +6,12 @@ const router = Router();
 
 router.post('/addToCart', validateToken, async (req, res, next) => {
 
-  const {productId} = parseInt(req.body);
+  const {productId} = req.body;
 
-  console.log(req.user)
+  console.log(productId)
 
   try {
-    const productFromDB = await pool.query(`SELECT * FROM product WHERE product_id = $1`, [req.params.id]);
+    const productFromDB = await pool.query(`SELECT * FROM product WHERE product_id = $1`, [parseInt(productId)]);
     if (productFromDB.rowCount === 0) {
       return next(new Error("Product not found"));
     }
@@ -20,7 +20,7 @@ router.post('/addToCart', validateToken, async (req, res, next) => {
     const createCartItemQuery = `INSERT INTO cart (product_id,create_dt,user_id) VALUES ($1, $2, $3) RETURNING *`;
     const values = [
       productFromDB.rows[0].product_id,
-      new Date().toDateString(),
+      new Date().toISOString(),
       req.user.user_id
     ]
     const result = await pool.query(createCartItemQuery, values);
@@ -59,12 +59,12 @@ router.get('/getCartItems', validateToken, async (req, res, next) => {
 })
 
 router.delete('/removeFromCart/:id', validateToken, async (req, res, next) => {
-  const cartId = parseInt(req.params.id);
+  const cartId = req.params.id;
 
   const user = req.user;
   try {
     const deleteCartItemQuery = `DELETE FROM cart WHERE cart_id = $1 AND user_id = $2 and ordered=false`;
-    const deleteCartItemValues = [cartId, user.user_id];
+    const deleteCartItemValues = [parseInt(cartId), user.user_id];
     const result = await pool.query(deleteCartItemQuery, deleteCartItemValues);
     if (result.rowCount > 0) {
       res.status(200).json({

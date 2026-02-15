@@ -18,8 +18,8 @@ async function validateToken(req, res, next) {
 
     next()
   } catch (error) {
-    error.message = "Unknown Error";
-    error.status = 401;
+    error.message = "Forbidden";
+    error.status = 403;
 
     return next(error)
   }

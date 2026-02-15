@@ -38,14 +38,15 @@ router.post('/pay', validateToken, async (req, res, next) => {
     const getOrderStatusValues = [order_id, order_status.PENDING];
      const orders = await client.query(getOrderStatusQuery, getOrderStatusValues);
 
-     if(orders.rowCount===0){
+    if (orders.rowCount === 0) {
       await client.query('ROLLBACK');
-      error.message = `Unknown Error`;
-      error.status = 500;
-      return next(error);
+      const notFoundError = new Error(`Order ${order_id} not found or not in pending state`);
+      notFoundError.status = 404;
+      return next(notFoundError);
     }
+
     const updateOrderStatusQuery = `UPDATE ORDERS SET order_status = $1 where order_id = $2`;
-    const updateOrderStatusValues = [order_status.CONFIRMED, getPayment.rows[0].order_id];
+    const updateOrderStatusValues = [order_status.CONFIRMED, order_id];
     await client.query(updateOrderStatusQuery, updateOrderStatusValues);
 
 

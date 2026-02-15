@@ -28,14 +28,20 @@ router.post("/createOrder", validateToken, async (req, res, next) => {
     }
 
     const createOrderQuery = `INSERT INTO ORDERS(user_id,create_dt,order_status) values ($1,$2,$3) RETURNING order_id`;
-    const createOrderValues = [user.user_id, new Date(), order_status.PENDING];
+    const createOrderValues = [user.user_id, new Date().toISOString(), order_status.PENDING];
 
     const createOrder = await client.query(createOrderQuery, createOrderValues);
+    if(createOrder.rowCount === 0){
+      await client.query('ROLLBACK');
+      error.message = "Unknown Error";
+      error.status = 500;
+      return next(error);
+    }
 
 
     const invoice = "INV" + mumble(8).toUpperCase();
     const createPaymentQuery = `INSERT INTO PAYMENTS(invoice,order_id,user_id,pay_dt,payment_status) values ($1,$2,$3,$4,$5)`;
-    const createPaymentValues = [invoice, createOrder.rows[0].order_id, user.user_id, new Date().toDateString(), payment_status.PENDING];
+    const createPaymentValues = [invoice, createOrder.rows[0].order_id, user.user_id, new Date().toISOString(), payment_status.PENDING];
 
     await client.query(createPaymentQuery, createPaymentValues);
 
@@ -54,10 +60,15 @@ router.post("/createOrder", validateToken, async (req, res, next) => {
       const createOrderItemQuery = `INSERT INTO ORDER_ITEM(order_id,product_id,product_name,price) values ($1,$2,$3,$4) RETURNING *`;
       const createOrderItemValues = [createOrder.rows[0].order_id, cartItem.product_id, product.rows[0].product, product.rows[0].sale_price];
 
-      await client.query(createOrderItemQuery, createOrderItemValues);
+      const createdOrderItem = await client.query(createOrderItemQuery, createOrderItemValues);
 
 
-
+      if(createdOrderItem.rowCount === 0){
+        await client.query('ROLLBACK');
+        error.message = "Unknown Error";
+        error.status = 500;
+        return next(error);
+      } 
 
       const updateCartItemsQuery = `UPDATE CART SET ordered = true where cart_id = $1`;
       const updateCartItemsValues = [cartItem.cart_id];
@@ -164,11 +175,18 @@ router.get("/getOrderById/:id", validateToken, async (req, res, next) => {
 
     const getOrderStatusQuery = `SELECT * FROM ORDERS WHERE order_id=$1`;
     const getOrderStatusValues = [id];
-    const order_status = await pool.query(getOrderStatusQuery, getOrderStatusValues);
+    const orderStatusRes = await pool.query(getOrderStatusQuery, getOrderStatusValues);
 
     if (orders.rowCount > 0) {
+      if (orderStatusRes.rowCount === 0) {
+        const error = new Error();
+        error.message = `Order ${id} not found`;
+        error.status = 404;
+        return next(error);
+      }
+
       res.json({
-        order_status: order_status.rows[0].order_status,
+        order_status: orderStatusRes.rows[0].order_status,
         orders: orders.rows,
         total_amount: orders.rows.reduce((sum, item) => {
           return sum + item.price
