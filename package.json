@@ -11,7 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "node-mumble": "^1.2.1",
     "pg": "^8.18.0",
@@ -19,7 +23,6 @@
   },
   "devDependencies": {
     "csv-parser": "^3.2.0",
-    "dotenv": "^17.3.1",
     "nodemon": "^3.1.11"
   }
 }

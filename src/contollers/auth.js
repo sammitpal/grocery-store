@@ -1,7 +1,8 @@
 import { Router } from "express";
 import pool from "../config/db.js";
 import validations from "../utils/validateSchema.js";
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
+import bcrypt from "bcryptjs";
 
 
 const router = Router();
@@ -32,12 +33,13 @@ router.post('/register', async (req, res, next) => {
     return next(error);
   }
 
-
+  const salt = await bcrypt.genSalt(12);
+  const hashPassword = await bcrypt.hash(password,salt);
   const registerQuery = `INSERT INTO USERS (username,email,password) values ($1,$2,$3) RETURNING *`;
   const registerValues = [
     username,
     email,
-    password
+    hashPassword
   ]
 
   const result = await pool.query(registerQuery, registerValues);
@@ -77,7 +79,9 @@ router.post('/login', async (req, res, next) => {
     return next(error);
   }
 
-  if (users.rows[0].password === password) {
+  const decodedPassword = await bcrypt.compare(password,users.rows[0].password);
+
+  if (decodedPassword) {
 
     const payload = {
       user_id: users.rows[0].user_id,
